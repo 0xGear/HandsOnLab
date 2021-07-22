@@ -32,5 +32,16 @@
     "@openzeppelin/contracts": "^4.2.0",
     "dotenv": "^8.2.0"
   },
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/0xGear/HandsOnLab.git"
+  },
+  "bugs": {
+    "url": "https://github.com/0xGear/HandsOnLab/issues"
+  },
+  "homepage": "https://github.com/0xGear/HandsOnLab#readme",
   "description": ""
 }
