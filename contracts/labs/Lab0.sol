@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.6;
 
-contract Lab1 {
+contract Lab0 {
   bool public isCompleted = false;
 
   event DoLab(address indexed from);

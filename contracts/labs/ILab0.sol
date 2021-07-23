@@ -1,10 +1,10 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.6;
-import "./Lab1.sol";
+import "./Lab0.sol";
 
-contract ILab1 {
+contract ILab0 {
   uint public reward;
-  mapping(address => Lab1) labs;
+  mapping(address => Lab0) labs;
 
   event CreateLab(address indexed from);
   
@@ -13,7 +13,7 @@ contract ILab1 {
   }
 
   function createLab(address addr) public returns (bool success){
-    labs[addr] = new Lab1();
+    labs[addr] = new Lab0();
     emit CreateLab(addr);
     return true;
   }

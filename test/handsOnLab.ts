@@ -14,7 +14,8 @@ let labAddr: any;
 let tx: any;
 let value: any;
 let names = ["Alice", "Bob", "Charles"];
-
+let testILab = "ILab0";
+let testLab = "Lab0";
 
 describe("Test Hands-on-Lab", function(){
   before(async () => {
@@ -45,8 +46,8 @@ describe("Test Hands-on-Lab", function(){
     let stuNum = (await handsOnLab.studentNum()).toString();
     console.log("# of students:", stuNum);
     
-    //deploy iLab1 contract
-    factory = await ethers.getContractFactory("ILab1");
+    //deploy iLab contract
+    factory = await ethers.getContractFactory(testILab);
     iLab = await factory.deploy(10);
     console.log("Addr of ILab:", iLab.address);
     tx = await iLab.deployTransaction.wait();
@@ -113,8 +114,8 @@ describe("Test Hands-on-Lab", function(){
     }
   })
 
-  it("Test Lab1", async function() {
-    factory = await ethers.getContractFactory("Lab1");
+  it("Test Lab", async function() {
+    factory = await ethers.getContractFactory(testLab);
     for(let i=0; i<names.length; i++)
     {
       handsOnLab = await handsOnLab.connect(accounts[i+1]);

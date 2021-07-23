@@ -98,7 +98,6 @@ contract HandsOnLab is Owned {
   }
 
   function checkStudentLab(address addr, uint index) public returns (bool success) {
-    console.log("check student lab:", msg.sender);
     ILab iLab = ILab(iLabs[index]);
     bool complete_flag = iLab.isCompleted(addr);
     if(complete_flag && students[addr].isCompleted[index] == false){
