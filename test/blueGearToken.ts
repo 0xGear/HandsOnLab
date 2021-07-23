@@ -26,7 +26,7 @@ async function getAccountInfo(){
   console.log("Allowance of account2:", allowance2);
 }
 
-describe("Deplay the BlueGearToken Contract", function(){
+describe("Test BlueGearToken Contract", function(){
   before(async () => {
     [account1, account2, account3] = await ethers.getSigners();
     addr1 = await account1.getAddress();
@@ -37,13 +37,13 @@ describe("Deplay the BlueGearToken Contract", function(){
     console.log("Account3:", addr3);
   })
 
-  it("Get contract...", async function() {
+  it("Deploy BlueGearToken contract", async function() {
     let factory = await ethers.getContractFactory("BlueGearToken");
     contract = await factory.deploy();
     await contract.deployed();
-    //contract = await factory.attach(contractAddr);
     console.log("Addr of BlueGearToken:", contract.address);
     console.log("Owner:", await contract.owner());
+    console.log("Creator:", await contract.creator());
   })
 
   it("Test transfer and balanceOf function...", async function() {

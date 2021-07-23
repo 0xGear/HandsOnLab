@@ -3,13 +3,13 @@ import { ContractFactory, Contract, Signer, BigNumber} from "ethers";
 import { expect, assert } from "chai";
 
 let accounts: Signer[];
-let account1: Signer;
+let signer: Signer;
 let handsOnLab: Contract;
 let blueGearToken: Contract;
 let iLab: Contract;
 let lab: Contract;
 let factory: ContractFactory;
-let addr1: any;
+let signerAddr: any;
 let labAddr: any;
 let tx: any;
 let value: any;
@@ -19,30 +19,51 @@ let names = ["Alice", "Bob", "Charles"];
 describe("Test Hands-on-Lab", function(){
   before(async () => {
     accounts = await ethers.getSigners();
-    account1 = accounts[0];
-    addr1 = await account1.getAddress();
-    console.log("Account1:", addr1);
+    signer = accounts[0];
+    signerAddr = await signer.getAddress();
+    console.log("Signer:", signerAddr);
     
-    factory = await ethers.getContractFactory("HandsOnLab");
-    handsOnLab = await factory.deploy();
-    console.log("Addr of HandsOnLab:", handsOnLab.address);
-    tx = await handsOnLab.deployTransaction.wait();
-    console.log("Tx receipt:", tx.blockNumber, tx.transactionHash);
-
+    //deploy BlueGearToken contract
     factory = await ethers.getContractFactory("BlueGearToken");
     blueGearToken = await factory.deploy();
     console.log("Addr of BlueGearToken:", blueGearToken.address);
     tx = await blueGearToken.deployTransaction.wait();
     console.log("Tx receipt:", tx.blockNumber, tx.transactionHash);
+    console.log("Owner:", await blueGearToken.owner());
+    console.log("Rewarder:", await blueGearToken.rewarder());
+    let supply = (await blueGearToken.totalSupply()).toString();
+    console.log("Total supply of BlueGear Coin:", supply);
+
+    //deploy HandsOnLab contract
+    factory = await ethers.getContractFactory("HandsOnLab");
+    handsOnLab = await factory.deploy();
+    console.log("Addr of HandsOnLab:", handsOnLab.address);
+    tx = await handsOnLab.deployTransaction.wait();
+    console.log("Tx receipt:", tx.blockNumber, tx.transactionHash);
+    let labNum = (await handsOnLab.iLabNum()).toString();
+    console.log("# of labs:", await labNum);
+    let stuNum = (await handsOnLab.studentNum()).toString();
+    console.log("# of students:", stuNum);
     
     //deploy iLab1 contract
     factory = await ethers.getContractFactory("ILab1");
-    iLab = await factory.deploy();
+    iLab = await factory.deploy(10);
     console.log("Addr of ILab:", iLab.address);
     tx = await iLab.deployTransaction.wait();
     console.log("Tx receipt:", tx.blockNumber, tx.transactionHash);
+    let reward = (await iLab.reward()).toString();
+    console.log("Reward of iLab:", reward);
   })
 
+  it("Test setReward function", async function() {
+    tx = await blueGearToken.setRewarder(handsOnLab.address);
+    tx = await tx.wait();
+    console.log("Tx of setToken:", tx.blockNumber, tx.transactionHash);
+    let rewarder = await blueGearToken.rewarder();
+    console.log("Rewarder of BlueGear Coin:", rewarder);
+    expect(rewarder).to.equal(handsOnLab.address);
+
+  })
 
   it("Test setToken and getToken function", async function() {
     let tokenAddr = blueGearToken.address;
@@ -54,12 +75,12 @@ describe("Test Hands-on-Lab", function(){
     expect(tokenAddr).to.equal(tx);
   })
 
-  it("Test setLab and getLab function", async function() {
-    tx = await handsOnLab.setLab(1, iLab.address);
+  it("Test setLab, and getLab function", async function() {
+    tx = await handsOnLab.setILabAddr(1, iLab.address);
     tx = await tx.wait();
-    console.log("Tx of setLab:", tx.blockNumber, tx.transactionHash);
-    tx = await handsOnLab.getLab(1);
-    console.log("Rst of getLab:", tx);
+    console.log("Tx of setILabAddr:", tx.blockNumber, tx.transactionHash);
+    tx = await handsOnLab.getILabAddr(1);
+    console.log("Rst of getILabAddr:", tx);
     expect(tx).to.equal(iLab.address);
   })
 
@@ -70,11 +91,11 @@ describe("Test Hands-on-Lab", function(){
       let handsOnLabTmp = await handsOnLab.connect(accounts[i+1]);
       tx = await handsOnLabTmp.register(names[i]);
       tx = await tx.wait();
-      let num = (await handsOnLab.getStudentNum()).toString();
+      let num = (await handsOnLab.studentNum()).toString();
       let addr = await accounts[i+1].getAddress();
-      tx = await handsOnLab.getStudentLab(addr, 1);
-      console.log("Student Info:",num, tx.stuName, tx.stuAddr, tx.labAddr);
-      expect(tx.stuName).to.equal(names[i]);
+      let name = await handsOnLab.getStudentName(addr);
+      console.log("Student Name:",num, name, addr);
+      expect(name).to.equal(names[i]);
     }
   })
   
@@ -85,11 +106,10 @@ describe("Test Hands-on-Lab", function(){
       tx = await handsOnLabTmp.doLab(1);
       tx = await tx.wait();
       console.log("Tx of doLab", tx.blockNumber, tx.transactionHash);
-      let addr = await accounts[i+1].getAddress();
-      let stu = await handsOnLabTmp.getStudentLab(addr, 1);
-      console.log("Studnet Info:", stu.stuName, stu.stuAddr, stu.labAddr);
-      tx = await iLab.getLabAddress(stu.stuAddr);
-      expect(tx).to.equal(stu.labAddr);
+      let stuAddr = await accounts[i+1].getAddress();
+      let labAddr = await handsOnLabTmp.getStudentLabAddr(stuAddr, 1);
+      tx = await iLab.getLabAddress(stuAddr);
+      expect(tx).to.equal(labAddr);
     }
   })
 
@@ -97,17 +117,33 @@ describe("Test Hands-on-Lab", function(){
     factory = await ethers.getContractFactory("Lab1");
     for(let i=0; i<names.length; i++)
     {
-      let addr = await accounts[i+1].getAddress();
-      let stu = await handsOnLab.getStudentLab(addr, 1);
-      console.log("Studnet Info:", stu.stuName, stu.stuAddr, stu.labAddr);
-      lab = await factory.attach(stu.labAddr);
+      handsOnLab = await handsOnLab.connect(accounts[i+1]);
+      let stuAddr = await accounts[i+1].getAddress();
+      console.log("Addr of student:", stuAddr);
+      let labAddr = await handsOnLab.getStudentLabAddr(stuAddr, 1);
+      lab = await factory.attach(labAddr);
       tx = await lab.isCompleted();
-      console.log("isCompleted before doLab:", tx);
+      console.log("[before - Lab] isCompleted:", tx);
+      tx = await iLab.isCompleted(stuAddr);
+      console.log("[before - iLab] isCompleted:", tx);
+      tx = await handsOnLab.isStudentLabCompleted(stuAddr, 1);
+      console.log("[before - HandsOnLab] isCompleted:", tx);
       tx = await lab.doLab();
       tx = await tx.wait();
       tx = await lab.isCompleted();
-      console.log("isCompleted after doLab:", tx);
+      console.log("[after - Lab] isCompleted:", tx);
+      tx = await iLab.isCompleted(stuAddr);
+      console.log("[after - iLab] isCompleted:", tx);
+      tx = await handsOnLab.checkStudentLab(stuAddr, 1);
+      await tx.wait();
+      tx = await handsOnLab.isStudentLabCompleted(stuAddr, 1);
+      console.log("[after - HandsOnLab]isCompleted:", tx);
       expect(tx).to.be.true;
+      
+      let supply = (await blueGearToken.totalSupply()).toString();
+      console.log("Total supply of BGC:", supply);
+      let bal = (await blueGearToken.balanceOf(stuAddr)).toString();
+      console.log("Balance of", names[i], bal);
     }
   })
   

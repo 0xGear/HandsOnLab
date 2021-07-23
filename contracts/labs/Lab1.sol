@@ -2,15 +2,13 @@
 pragma solidity ^0.8.6;
 
 contract Lab1 {
-  bool completed = false;
+  bool public isCompleted = false;
 
   event DoLab(address indexed from);
 
-  function doLab() public{
-    completed = true;
+  function doLab() public returns (bool success) {
+    isCompleted = true;
     emit DoLab(msg.sender);
-  }
-  function isCompleted() public view returns (bool){
-    return completed;
+    return true;
   }
 }
