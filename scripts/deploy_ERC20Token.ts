@@ -4,7 +4,7 @@ async function main() {
   await run("compile");
 
   const accounts = await ethers.getSigners();
-  for(let i=0; i<5; i++)
+  for(let i=0; i<3; i++)
   {
     console.log("account[%d] = %s", i, await accounts[i].getAddress());
   }

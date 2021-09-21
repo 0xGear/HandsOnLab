@@ -37,7 +37,7 @@ describe("Test ERC20Token Contract", function(){
     console.log("Account3:", addr3);
   })
 
-  it.skip("Deploy ERC20Token contract", async function() {
+  it("Deploy ERC20Token contract", async function() {
     let factory = await ethers.getContractFactory("ERC20Token");
     contract = await factory.deploy(totalSupply);
     await contract.deployed();
@@ -47,7 +47,7 @@ describe("Test ERC20Token Contract", function(){
     console.log("Decimals:", await contract.decimals());
   })
   
-  it("Attach ERC20Token contract", async function() {
+  it.skip("Attach ERC20Token contract", async function() {
     let contractAddr = `0x5FbDB2315678afecb367f032d93F642f64180aa3`;
     let factory = await ethers.getContractFactory("ERC20Token");
     contract = await factory.attach(contractAddr);
