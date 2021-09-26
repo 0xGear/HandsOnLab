@@ -4,3 +4,4 @@ cache
 package-lock.json
 *.swp
 *.log
+hardhat.config.ts
