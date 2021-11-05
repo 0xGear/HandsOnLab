@@ -1,7 +1,10 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.6;
-
+import "hardhat/console.sol";
 interface IERC20 {
+  function name() external view returns (string memory);
+  function symbol() external view returns (string memory);
+  function decimals() external view returns (uint8);
 
   function totalSupply() external view returns (uint256);
   function balanceOf(address account) external view returns (uint256);
@@ -17,13 +20,20 @@ interface IERC20 {
 }
 
 contract TokenBank{
-  mapping(string => address) token;
+  mapping(string => address) tokenAddr;
 
-  function registerToken(string symbol, address tokenContract) public {
-    mapping[symbol] = tokenContract; 
+  function registerToken(string memory sym, address _tokenAddr) public {
+    tokenAddr[sym] = _tokenAddr;
   }
-  function deposit(string symbol, uint amount) public {
-    address tokenAddr = token[symbol];
-    IERC20(tokenAddr).
+  function name(string memory sym) public view returns (string memory){
+    return IERC20(tokenAddr[sym]).name();
+  }
+  function symbol(string memory sym) public view returns (string memory){
+    return IERC20(tokenAddr[sym]).symbol();
+  }
+  function decimals(string memory sym) public view returns (uint8){
+    return IERC20(tokenAddr[sym]).decimals();
+  }
+  function deposit(string memory sym, uint amount) public {
   }
 }
