@@ -62,13 +62,40 @@ describe("Test ERC20Token Contract", function(){
     tokenBank = await factory.deploy();
     await tokenBank.deployed();
     console.log('Addr of TokenBank:', tokenBank.address);
-    let symbol = await tokenA.symbol();
-    let addr = tokenA.address;
-    await tokenBank.registerToken(symbol, addr);
-    console.log("Name:", await tokenBank.name(symbol));
-    console.log("Name:", await tokenBank.symbol(symbol));
-    console.log("Name:", await tokenBank.decimals(symbol));
+  })
+  
+  it("Deposit & Withdraw TokenA", async function() {
+    let amount = BigNumber.from(`10`);
+    await expect(tokenBank.deposit(tokenA.address, amount)).to.be.revertedWith('approval amount not enough');
+    await tokenA.approve(tokenBank.address, amount);
+    await tokenBank.deposit(tokenA.address, amount);
+    let balanceOf = await tokenBank.balanceOf(tokenA.address);
+    expect(balanceOf).to.equal(amount);
 
+    amount = BigNumber.from(`20`);
+    await expect(tokenBank.withdraw(tokenA.address, amount)).to.be.revertedWith('balance not enough');
+    amount = BigNumber.from(`5`);
+    let beforeWithdraw = await tokenBank.balanceOf(tokenA.address);
+    tokenBank.withdraw(tokenA.address, amount);
+    let remain = await tokenBank.balanceOf(tokenA.address);
+    expect(remain).to.equal(beforeWithdraw.sub(amount));
+  })
+  
+  it("Deposit & Withdraw TokenB", async function() {
+    let amount = BigNumber.from(`10`);
+    await expect(tokenBank.deposit(tokenB.address, amount)).to.be.reverted;
+    await tokenB.approve(tokenBank.address, amount);
+    await tokenBank.deposit(tokenB.address, amount);
+    let balanceOf = await tokenBank.balanceOf(tokenB.address);
+    expect(balanceOf).to.equal(amount);
+
+    amount = BigNumber.from(`20`);
+    await expect(tokenBank.withdraw(tokenB.address, amount)).to.be.revertedWith('balance not enough');
+    amount = BigNumber.from(`5`);
+    let beforeWithdraw = await tokenBank.balanceOf(tokenB.address);
+    tokenBank.withdraw(tokenB.address, amount);
+    let remain = await tokenBank.balanceOf(tokenB.address);
+    expect(remain).to.equal(beforeWithdraw.sub(amount));
   })
   
   it.skip("Attach ERC20Token contract", async function() {
@@ -81,33 +108,5 @@ describe("Test ERC20Token Contract", function(){
     console.log("Decimals:", await tokenA.decimals());
   })
 
-  it.skip("Test transfer and balanceOf functions", async function() {
-    tokenA = await tokenA.connect(account1);
-    let balance = await tokenA.balanceOf(addr2);
-    tx = await tokenA.transfer(addr2, transferNum);
-    await tx.wait();
-    let newBalance = (await tokenA.balanceOf(addr2)).toString();
-    
-    let v1 = balance.add(transferNum);
-    let v2 = BigNumber.from(newBalance);
-
-    expect(v1).to.equal(v2);
-  })
-
-  it.skip("Test approve, allowance, and transferFrom functions", async function() {
-    tokenA = await tokenA.connect(account1);
-    tx = await tokenA.approve(addr2, approveNum);
-    await tx.wait();
-    let allowance = await tokenA.allowance(addr1, addr2);
-    expect(allowance).to.equal(approveNum);
-    let balance = await tokenA.balanceOf(addr3);
-    tokenA = await tokenA.connect(account2);
-    tx = await tokenA.transferFrom(addr1, addr3, allowance);
-    await tx.wait();
-    let newBalance = await tokenA.balanceOf(addr3);
-    expect(newBalance).to.equal(balance.add(allowance));
-    allowance = await tokenA.allowance(addr1, addr2);
-    expect(allowance).to.equal(BigNumber.from(`0`));
-  })
 
 })

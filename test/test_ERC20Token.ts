@@ -39,7 +39,7 @@ describe("Test ERC20Token Contract", function(){
 
   it("Deploy ERC20Token contract", async function() {
     let factory = await ethers.getContractFactory("ERC20Token");
-    contract = await factory.deploy(totalSupply);
+    contract = await factory.deploy('CWB Token', 'CWBT', 16, totalSupply);
     await contract.deployed();
     console.log("Addr of ERC20Token:", contract.address);
     console.log("Name:", await contract.name());

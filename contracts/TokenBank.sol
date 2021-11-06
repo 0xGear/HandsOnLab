@@ -2,6 +2,7 @@
 pragma solidity ^0.8.6;
 import "hardhat/console.sol";
 interface IERC20 {
+
   function name() external view returns (string memory);
   function symbol() external view returns (string memory);
   function decimals() external view returns (uint8);
@@ -20,20 +21,30 @@ interface IERC20 {
 }
 
 contract TokenBank{
-  mapping(string => address) tokenAddr;
+  mapping(address => mapping(address => uint)) Token;
 
-  function registerToken(string memory sym, address _tokenAddr) public {
-    tokenAddr[sym] = _tokenAddr;
+  function name(address tokenAddr) public view returns (string memory){
+    return IERC20(tokenAddr).name();
   }
-  function name(string memory sym) public view returns (string memory){
-    return IERC20(tokenAddr[sym]).name();
+  function symbol(address tokenAddr) public view returns (string memory){
+    return IERC20(tokenAddr).symbol();
   }
-  function symbol(string memory sym) public view returns (string memory){
-    return IERC20(tokenAddr[sym]).symbol();
+  function decimals(address tokenAddr) public view returns (uint8){
+    return IERC20(tokenAddr).decimals();
   }
-  function decimals(string memory sym) public view returns (uint8){
-    return IERC20(tokenAddr[sym]).decimals();
+  function deposit(address tokenAddr, uint amount) public {
+    IERC20 token = IERC20(tokenAddr);
+    require(token.allowance(msg.sender, address(this)) >= amount, 'approval amount not enough');
+    token.transferFrom(msg.sender, address(this), amount);
+    Token[tokenAddr][msg.sender] = amount;
   }
-  function deposit(string memory sym, uint amount) public {
+  function withdraw(address tokenAddr, uint amount) public {
+    require(Token[tokenAddr][msg.sender] >= amount, 'balance not enough');
+    IERC20 token = IERC20(tokenAddr);
+    token.transfer(msg.sender, amount);
+    Token[tokenAddr][msg.sender] -= amount;
+  }
+  function balanceOf(address tokenAddr) public view returns (uint) {
+    return Token[tokenAddr][msg.sender];
   }
 }
