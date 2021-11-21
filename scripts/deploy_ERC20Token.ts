@@ -10,7 +10,7 @@ async function main() {
   }
   let factory = await ethers.getContractFactory('ERC20Token');
   let totalSupply = 1000;
-  let contract = await factory.deploy(totalSupply);
+  let contract = await factory.deploy("TestCoin", "TC", 18, totalSupply);
   await contract.deployed();
   console.log("addr of signer:", await contract.signer.getAddress());
   console.log("addr of ERC20Token:", contract.address);
